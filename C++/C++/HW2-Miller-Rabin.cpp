@@ -1,48 +1,28 @@
+
 #include<iostream>
 #include <fstream>
 #include<stdlib.h>
 using namespace std;
-
-
-int powermod(int x, int n, int m) {
-	int prod = 1;
-	if (n == 1) {
-		return x%m;
-	}
-	while (n > 0) {
-		if (n % 2 != 0) {
-			prod = (prod*x) % m;
-		}
-		x = (x*x) % m;
-		n = n / 2;
-	}
-	return prod*x;
-}
-
-bool Witness(int a, int n,int d,int s) {
-	cout << d << "  " << s << endl;
-	int x = powermod(a, d, n);
-	int k = 0;
-	if (x != 1 && x != n - 1) {
-		return true;
-	}
-	for (int i = 1; i < s; i++) {
-		x = (x*x) % n;	
-		if (x == 1) {
-			return false;
-		}
-		if (x == n - 1) {
-			return true;
-		}
-	}
-	return false;
-}
-
+// to get the result of  x^n mod m
+ int powermod(long long x, long long n, int m) {
+	 int prod = 1;
+	 if (n == 1) {
+		 return x%m;
+	 }
+	 while (n > 0) {
+		 if (n % 2 == 1) {
+			 prod = (prod*x) % m;
+		 }
+		 x = (x*x) % m;
+		 n = floor(n / 2);
+	 }
+	 return prod;
+ }
 bool Miller0Rabin(int n, int Testtimes) {
-	if (n < 2){
+	if (n < 2) {
 		return false;
 	}
-	if (n != 2 && n % 2 == 0){
+	if (n != 2 && n % 2 == 0) {
 		return false;
 	}
 	int d = n - 1;
@@ -51,23 +31,36 @@ bool Miller0Rabin(int n, int Testtimes) {
 		d /= 2;
 		s++;
 	}
-
-
+	    //make the a^n to 2^s*d
 	for (int i = 1; i <= Testtimes; i++) {
+		bool skip = false;
 		int a = rand() % (n - 2) + 2;
-		//generate a random number from 1 to n-1
-		if (!Witness(a, n,d,s)) {
+		//generate a random number from 2 to n-2
+		long long x = powermod(a, d, n);
+
+		if (x == 1 || x == n - 1) {
+			continue;
+		}
+		for (int i = 0; i < s - 1; i++) {
+			x = (x*x) % n;
+			if (x == 1) {
+				return false;
+			}else if (x == n - 1) {
+				skip = true;
+				break;
+			}
+		}
+		if (!skip) {
 			return false;
 		}
 	}
-		return true;
-	
+	return true;
 }
 
 int main() {
 	fstream file;
-	int testNum;
-	int testTime = 5;
+	long long testNum;
+	long long testTime = 5;
 	file.open("hw2.dat");
 	if (!file) {
 		cout << "open file fail!!" << endl;
@@ -76,10 +69,10 @@ int main() {
 	while (file >> testNum) {
 	
 		if (Miller0Rabin(testNum, testTime)) {
-			cout << testNum << " is prime" << endl;
+			cout << testNum << " true" << endl;
 		}
 		else {
-			cout << testNum << " is not prime" << endl;
+			cout << testNum << " false" << endl;
 		}
 	}
 
